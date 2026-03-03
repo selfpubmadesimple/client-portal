@@ -46,13 +46,16 @@ export default function NewClient() {
         if (pkgErr) throw pkgErr
       }
 
-      // 4. Populate checklist
-      const { error: checklistErr } = await supabase.rpc('populate_project_checklist', { p_project_id: project.id })
-      if (checklistErr) console.warn('Checklist population failed:', checklistErr)
+      // 4. Populate checklist (non-blocking — navigate even if this fails)
+      try {
+        await supabase.rpc('populate_project_checklist', { p_project_id: project.id })
+      } catch (checklistErr) {
+        console.warn('Checklist population failed:', checklistErr)
+      }
 
       navigate(`/admin/clients/${client.id}`)
     } catch (err) {
-      setError(err.message)
+      setError(err.message || 'Something went wrong. Please try again.')
       setSaving(false)
     }
   }
